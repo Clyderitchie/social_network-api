@@ -7,13 +7,14 @@ const userSchema = new Schema(
             type: String,
             unique: true,
             required: true,
-            trimmed: true
+            trim: true
         },
         email: {
             type: String,
             required: true,
             unique: true,
-            match: [/^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/, 'Please enter a valid email address']
+            match: [/^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/, 
+            'Please enter a valid email address']
         },
         thoughts: {
             type: mongoose.Schema.Types.ObjectId,
@@ -26,10 +27,15 @@ const userSchema = new Schema(
     },
     {
         toJSON: {
+            virtuals: true,
             getters: true,
         },
     }
 );
+
+userSchema.virtual('friendCount').get(function () {
+    return this.friends.length;
+});
 
 const User = model('user', userSchema);
 
