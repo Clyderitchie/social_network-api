@@ -1,5 +1,5 @@
 const { Schema, model, default: mongoose } = require('mongoose');
-const thoughtSchema = reguire('./Thought');
+const thoughtSchema = require('./Thought');
 
 const userSchema = new Schema(
     {
