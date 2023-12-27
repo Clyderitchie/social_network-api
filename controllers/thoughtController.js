@@ -1,7 +1,3 @@
-// deleteThought,
-// addReaction,
-// removeReaction
-
 const { Thought, User } = require('../models');
 
 module.exports = {
@@ -54,7 +50,7 @@ module.exports = {
             );
 
             if (!updateThought) {
-                return res.status(404).json({ message: 'Could not find a Thought with that Id to update '});
+                return res.status(404).json({ message: 'Could not find a Thought with that Id to update ' });
             }
 
             res.json(updateThought);
@@ -64,15 +60,57 @@ module.exports = {
         }
     },
     //  Delete a Thought
-    async deleteThought (req, res) {
+    async deleteThought(req, res) {
         try {
             const destroyThought = await Thought.findByIdAndDelete({ _id: req.params.id });
-
-            if (!destroyThought) {
-                return res.status(404).json ({ message: 'Could not find a Thought by that ID to delete.' });
+            const userThoughtDestroy = await User.findByIdAndUpdate(
+                { thoughts: req.params.id },
+                { $pull: { thoughts: req.params.id } },
+                { new: true },
+            )
+            if (!destroyThought || !userThoughtDestroy) {
+                return res.status(404).json({ message: 'Could not find a Thought by that ID to delete.' });
             }
 
             res.json({ message: 'Thought has been deleted. Brain empty no more thoughts...' });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json(err.message);
+        }
+    },
+    //  Add a Reaction
+    async addReaction(req, res) {
+        try {
+            const addReaction = await Thought.findOneAndUpdate(
+                { _id: req.params.thoughtId },
+                { $addToSet: { reactions: req.body } },
+                { new: true, runValidators: true },
+            )
+
+            if (!addReaction) {
+                return res.json({ message: 'No thought with this ID was found.' });
+            }
+
+            res.json(addReaction)
+        } catch (err) {
+            console.log(err);
+            res.status(500).json(err.message);
+        }
+    },
+    // Remove a Reaction
+    async removeReaction(req, res) {
+        try {
+            const reactionRemove = await Thought.findOneAndUpdate(
+                { _id: req.params.id },
+                { $pull: { reactions: { reactionId: req.params.reactionId } } },
+                { new: true }
+            )
+
+            if (!reactionRemove) {
+                return res.json({ message: 'Could not locate a Reaction by that ID. Sad face.' })
+            }
+
+            res.json(reactionRemove)
         } catch (err) {
             console.log(err);
             res.status(500).json(err.message);
