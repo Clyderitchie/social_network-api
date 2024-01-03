@@ -15,9 +15,7 @@ module.exports = {
     async getUserById(req, res) {
         try {
             const user = await User.findOne({ _id: req.params.id })
-                .populate({
-                    path: 'thoughts'
-                })
+                .populate('thoughts').populate('friends')
                 .select('-__v')
             if (!user) {
                 return res.json({ message: 'Could not locate a user by that ID.' });

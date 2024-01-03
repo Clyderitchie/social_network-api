@@ -35,7 +35,14 @@ module.exports = {
     async createThought(req, res) {
         try {
             const newThought = await Thought.create(req.body);
-            res.json(newThought);
+            const user = await User.findOneAndUpdate({ username: req.body.username }, { $push: { thoughts: newThought._id } },
+                { new: true })
+
+            if(!user) {
+                return res.json('Thought created but no user with that username')
+            }
+
+            res.json('Thought was created correctly');
         } catch (err) {
             console.log(err);
             res.status(500).json(err.message);
@@ -94,7 +101,7 @@ module.exports = {
 
             res.json(addReaction)
         } catch (err) {
-            console.log(err);
+            console.log(err.message);
             res.status(500).json(err.message);
         }
     },
